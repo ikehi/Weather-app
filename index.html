@@ -74,7 +74,7 @@
         font-size: 16px;
       }
     }
-  </style
+  </style>
 </head>
 
 <body>
@@ -148,7 +148,7 @@
           return response.json();
         })
         .then(function(data) {
-          displayWeather(data);
+          displayWeather(data, unit);
         })
         .catch(function(error) {
           displayError(error.message);
@@ -156,34 +156,36 @@
     }
 
     function fetchGeolocationWeather() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var latitude = position.coords.latitude;
-          var longitude = position.coords.longitude;
-          var apiKey = '2e189fabcb3441d29ed200419231206';
-          var unit = document.getElementById('unit-select').value;
-          var apiUrl = 'https://api.weatherapi.com/v1/current.json?key=' + apiKey + '&q=' + latitude + ',' + longitude + '&units=' + unit;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var latitude = position.coords.latitude;
+      var longitude = position.coords.longitude;
+      var apiKey = '2e189fabcb3441d29ed200419231206';
+      var unit = document.getElementById('unit-select').value;
+      var apiUrl = 'https://api.weatherapi.com/v1/current.json?key=' + apiKey + '&q=' + latitude + ',' + longitude + '&units=' + unit;
 
-          fetch(apiUrl)
-            .then(function(response) {
-              if (!response.ok) {
-                throw new Error('Failed to fetch weather');
-              }
-              return response.json();
-            })
-            .then(function(data) {
-              displayWeather(data);
-            })
-            .catch(function(error) {
-              displayError(error.message);
-            });
+      fetch(apiUrl)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Failed to fetch weather');
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          displayWeather(data, unit);
+          document.getElementById('location').value = data.location.name;
+        })
+        .catch(function(error) {
+          displayError(error.message);
         });
-      } else {
-        displayError('Geolocation is not supported by your browser');
-      }
-    }
+    });
+  } else {
+    displayError('Geolocation is not supported by your browser');
+  }
+}
 
-    function displayWeather(data) {
+
+    function displayWeather(data, unit) {
       document.getElementById('error-message').style.display = 'none';
 
       var weatherIcon = document.getElementById('weather-icon');
@@ -193,7 +195,11 @@
       weatherDescription.textContent = 'Description: ' + data.current.condition.text;
 
       var temperature = document.getElementById('temperature');
-      temperature.textContent = 'Temperature: ' + data.current.temp_c + ' °C';
+      if (unit === 'C') {
+        temperature.textContent = 'Temperature: ' + data.current.temp_c + ' °C';
+      } else {
+        temperature.textContent = 'Temperature: ' + data.current.temp_f + ' °F';
+      }
 
       var humidity = document.getElementById('humidity');
       humidity.textContent = 'Humidity: ' + data.current.humidity + '%';
